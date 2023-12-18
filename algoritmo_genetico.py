@@ -91,9 +91,13 @@ def evaluate_individual(individual):
     return score_ransac, score_basic, individual
 
 def evaluate_population(population):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # Avalia cada indivíduo na população em paralelo
-        results = list(executor.map(evaluate_individual, population))
+    if False:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Avalia cada indivíduo na população em paralelo
+            results = list(executor.map(evaluate_individual, population))
+    results = []
+    for p in population:
+        results.append(evaluate_individual(p))
     
     return results
 
@@ -136,7 +140,7 @@ def mutate_params(individual_param):
      return {param: generates_mutation(param, value) for param, value in individual_param.items()}
 
 if __name__ == "__main__":
-    geracoes = 50
+    geracoes = 10
     populations = generate_random_population(POPULATION_SIZE)
     avaliacao_best = []
     media_populacao = []
