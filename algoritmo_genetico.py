@@ -179,15 +179,16 @@ if __name__ == "__main__":
             population_result = evaluate_population(populations)
             population_sorted = sorted(population_result, key=lambda tupla: tupla[1], reverse=True)
             best_individual_score_ransac, best_individual_score_basic, best_individual_param = population_sorted[0]
+            population_sorted = [population[2] for population in population_sorted]
 
             mutated_individual = mutate_params(best_individual_param)
             new_population_crossover  = crossover(best_individual_param, mutated_individual)
 
             # Gera uma nova população com base nas características do melhor indivíduo
-            new_population_based_on_best = generate_population_based_on_best(best_individual_param, POPULATION_SIZE, used_params)
+            new_population_based_on_best = generate_population_based_on_best(best_individual_param, POPULATION_SIZE-2, used_params)
 
             # Atualiza a população para a próxima geração
-            populations = new_population_based_on_best + new_population_crossover
+            populations = new_population_based_on_best + new_population_crossover + generate_random_population(2)
 
             avaliacao_best.append(best_individual_score_basic)
             print(f"\t\t SCORE DO MELHOR INDIVÍDUO: {best_individual_score_basic} X {best_individual_score_ransac}")
