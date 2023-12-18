@@ -133,7 +133,6 @@ def generate_population_based_on_best(best_params, population_size, used_params)
             used_params.add(param_tuple)
     if i >20:
         print("NÃO FOI POSSIVEL CRIAR UMA POPULAÇÃO TOTALMENTE NOVA")
-    new_population.append(best_params.copy())  # Adiciona o melhor indivíduo à nova população
     return new_population
 
 def mutate_params(individual_param):
@@ -188,7 +187,7 @@ if __name__ == "__main__":
             new_population_based_on_best = generate_population_based_on_best(best_individual_param, POPULATION_SIZE-2, used_params)
 
             # Atualiza a população para a próxima geração
-            populations = new_population_based_on_best + new_population_crossover + generate_random_population(2)
+            populations = new_population_based_on_best + new_population_crossover + population_sorted[:2] + generate_random_population(2)
 
             avaliacao_best.append(best_individual_score_basic)
             print(f"\t\t SCORE DO MELHOR INDIVÍDUO: {best_individual_score_basic} X {best_individual_score_ransac}")
