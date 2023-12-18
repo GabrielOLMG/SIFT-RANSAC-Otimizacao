@@ -15,7 +15,7 @@ from funcoes_semelhanca import compare_keypoints_descriptors, computeSIFT, _comp
 PATH = "data_real"
 VAR_TYPES = {"sigma": float, "contrastThreshold": float, "nOctaveLayers": int, "edgeThreshold": int, "nfeatures": int}
 VAR_MUTATION = {"sigma": 0.3, "contrastThreshold": 0.3, "nOctaveLayers": 2, "edgeThreshold": 3, "nfeatures": 2}
-POPULATION_SIZE = 5
+POPULATION_SIZE = 10
 
 path_imagem_1 = "data_real/32972/imovel_1/1202860#009.jpg"
 path_imagem_2 = "data_real/32972/imovel_2/125621013-61#022.jpg"
@@ -91,24 +91,13 @@ def evaluate_individual(individual):
     return score_ransac, score_basic, individual
 
 def evaluate_population(population):
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         # Avalia cada indivíduo na população em paralelo
         results = list(executor.map(evaluate_individual, population))
     
     return results
 
 def crossover(parent1, parent2, crossover_point=None):
-    """
-    Realiza a operação de crossover entre dois indivíduos representados como dicionários.
-
-    Parâmetros:
-    - parent1: Dicionário representando o primeiro pai.
-    - parent2: Dicionário representando o segundo pai.
-    - crossover_point: Ponto de crossover no vetor (índice). Se for None, um ponto é escolhido aleatoriamente.
-
-    Retorna:
-    - Descendentes gerados a partir do crossover.
-    """
     if crossover_point is None:
         crossover_point = random.randint(1, len(parent1) - 1)
 
@@ -127,37 +116,82 @@ def crossover(parent1, parent2, crossover_point=None):
 
     return [child1, child2]
 
+def generate_population_based_on_best(best_params, population_size, used_params):
+    new_population = []
+    i = 0
+    while len(new_population) < (population_size - 1) and i < 20:
+        mutated_params = mutate_params(best_params)
+
+        # Verifica se os parâmetros já foram utilizados
+        param_tuple = tuple(mutated_params.items())
+        if param_tuple not in used_params:
+            new_population.append(mutated_params)
+            used_params.add(param_tuple)
+    if i >20:
+        print("NÃO FOI POSSIVEL CRIAR UMA POPULAÇÃO TOTALMENTE NOVA")
+    new_population.append(best_params.copy())  # Adiciona o melhor indivíduo à nova população
+    return new_population
+
+def mutate_params(individual_param):
+     return {param: generates_mutation(param, value) for param, value in individual_param.items()}
+
 if __name__ == "__main__":
     geracoes = 50
     populations = generate_random_population(POPULATION_SIZE)
     avaliacao_best = []
     media_populacao = []
-    for geracao in range(geracoes):
-        print(f"GERACAO {geracao+1} --------------------")
-        print(f"\t\t TOTAL DE INDIVIDUOS: {len(populations)}")
+    tipo_1=False
+    tipo_2=True
+    if tipo_1:
+        for geracao in range(geracoes):
+            print(f"GERACAO {geracao+1} --------------------")
+            print(f"\t\t TOTAL DE INDIVIDUOS: {len(populations)}")
 
-        population_result = evaluate_population(populations)
-        population_sorted = sorted(population_result, key=lambda tupla: tupla[1], reverse=True)
-        best_individual_score_ransac, best_individual_score_basic, best_individual_param = population_sorted[0]
+            population_result = evaluate_population(populations)
+            population_sorted = sorted(population_result, key=lambda tupla: tupla[1], reverse=True)
+            best_individual_score_ransac, best_individual_score_basic, best_individual_param = population_sorted[0]
 
-        mutated_individual = {param: generates_mutation(param, value) for param, value in best_individual_param.items()}
-        new_population_crossover  = crossover(best_individual_param, mutated_individual)
-        population_sorted = [population[2] for population in population_sorted]
-        if len(population_sorted) >=10:
-            population_sorted = population_sorted[:-3]
-            population_sorted.append(mutated_individual)
-        else:
-            population_sorted[-1] = mutated_individual
+            mutated_individual = {param: generates_mutation(param, value) for param, value in best_individual_param.items()}
+            new_population_crossover  = crossover(best_individual_param, mutated_individual)
+            population_sorted = [population[2] for population in population_sorted]
+            if len(population_sorted) >=10:
+                population_sorted = population_sorted[:-3]
+                population_sorted.append(mutated_individual)
+            else:
+                population_sorted[-1] = mutated_individual
 
-        population_sorted.extend(new_population_crossover)
-        avaliacao_best.append(best_individual_score_basic)
-        populations = population_sorted
-        print(f"\t\t SCORE DO MELHOR INDIVIDUO: {best_individual_score_basic} X {best_individual_score_ransac}")
-        print(f"-------------------- GERACAO {geracao+1}\n")
+            population_sorted.extend(new_population_crossover)
+            avaliacao_best.append(best_individual_score_basic)
+            populations = population_sorted
+            print(f"\t\t SCORE DO MELHOR INDIVIDUO: {best_individual_score_basic} X {best_individual_score_ransac}")
+            print(f"-------------------- GERACAO {geracao+1}\n")
+    elif tipo_2:
+        used_params = set()
 
-    
+        for geracao in range(geracoes):
+            print(f"GERACAO {geracao+1} --------------------")
+            print(f"\t\t TOTAL DE INDIVIDUOS: {len(populations)}")
+
+            population_result = evaluate_population(populations)
+            population_sorted = sorted(population_result, key=lambda tupla: tupla[1], reverse=True)
+            best_individual_score_ransac, best_individual_score_basic, best_individual_param = population_sorted[0]
+
+            mutated_individual = mutate_params(best_individual_param)
+            new_population_crossover  = crossover(best_individual_param, mutated_individual)
+
+            # Gera uma nova população com base nas características do melhor indivíduo
+            new_population_based_on_best = generate_population_based_on_best(best_individual_param, POPULATION_SIZE, used_params)
+
+            # Atualiza a população para a próxima geração
+            populations = new_population_based_on_best + new_population_crossover
+
+            avaliacao_best.append(best_individual_score_basic)
+            print(f"\t\t SCORE DO MELHOR INDIVÍDUO: {best_individual_score_basic} X {best_individual_score_ransac}")
+            print(f"\t\t PARAMETRO DO MELHOR INDIVÍDUO: {best_individual_param}")
+            print(f"-------------------- GERACAO {geracao+1}\n")
+
     plt.plot(range(1, geracoes + 1), avaliacao_best, marker='o')
     plt.title('Evolução do Desempenho ao Longo das Iterações')
     plt.xlabel('Iteração')
     plt.ylabel('Desempenho')
-    plt.show()
+    plt.savefig('grafico.png')
