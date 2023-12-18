@@ -1,0 +1,8 @@
+1_cria_dataset.py
+
+__pycache__/
+data_filtrado/
+data_original/
+data_output/
+fotos/
+venv/

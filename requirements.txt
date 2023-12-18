@@ -1,0 +1,10 @@
+opencv-python
+numpy
+pandas
+scikit-image
+tqdm
+selenium
+requests
+elasticdeform
+matplotlib
+tqdm
