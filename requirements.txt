@@ -9,3 +9,4 @@ elasticdeform
 matplotlib
 tqdm
 ipykernel
+boto3

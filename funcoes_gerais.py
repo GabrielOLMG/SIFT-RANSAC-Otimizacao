@@ -3,7 +3,15 @@ import cv2 as cv
 import pandas as pd
 
 def open_image(image_path):
-    return cv.imread(image_path,0)
+    image =  cv.imread(image_path,0)
+
+
+
+    #image = cv.equalizeHist(blurred_image)
+
+    return image
+
+
 
 
 def open_images(imovel_path):

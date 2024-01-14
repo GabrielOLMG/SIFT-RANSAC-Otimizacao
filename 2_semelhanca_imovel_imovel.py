@@ -11,14 +11,17 @@ from funcoes_semelhanca import get_keypoints_descriptors, compare_keypoints_desc
 ##########
 #PATH = "data_filtrado"
 PATH = "data_real"
-PATH_OUTPUT = "data_output"
-SIFT_MODEL = cv.SIFT_create(nOctaveLayers=20, contrastThreshold=0.02)
+PATH_OUTPUT = "data_output" 
+SIFT_MODEL = cv.SIFT_create(nOctaveLayers=8)
 #SIFT_MODEL = cv.ORB_create(scoreType=cv.ORB_HARRIS_SCORE, WTA_K=4)
 #SIFT_MODEL.setMaxFeatures(90000) 
 
 if __name__ == "__main__":
+    #p = {'sigma': 0.7536938498168531, 'contrastThreshold': 0.1255488944771055, 'nOctaveLayers': 2, 'edgeThreshold': 2, 'nfeatures': 122}
+    #SIFT_MODEL = cv.SIFT_create(**p)
     #lista_de_imoveis = os.listdir(PATH)
-    lista_de_imoveis = ["32972"]
+    #lista_de_imoveis = ["32972"]
+    lista_de_imoveis = ["52931"]
     print(lista_de_imoveis)
     for i,imovel in enumerate(lista_de_imoveis):
         print("-----------------------------------")
